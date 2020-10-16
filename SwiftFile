@@ -1,0 +1,473 @@
+
+enum VehicleType {
+    case CAR
+    case TRUCK
+    case ELECTRIC
+    case VAN
+    case MOTORBIKE
+}
+
+enum ParkingSpotType {
+    case HANDICAPPED
+    case COMPACT
+    case LARGE
+    case MOTORBIKE
+    case ELECTRIC
+}
+
+enum AccountStatus {
+    case ACTIVE
+    case BLOCKED
+    case BANNED
+    case COMPROMISED
+    case ARCHIVED
+    case UNKNOWN
+}
+
+enum ParkingTicketStatus {
+    case ACTIVE
+    case PAID
+    case LOST
+}
+
+class Address {
+    let streetAddress: String
+    let city: String
+    let state: String
+    let zipCode: String
+    let country: String
+    init(streetAddress: String, city: String, state: String,zipCode: String,country: String) {
+        self.streetAddress = streetAddress
+        self.city = city
+        self.state = state
+        self.zipCode = zipCode
+        self.country = country
+    }
+}
+
+class Person {
+    let name: String
+    let address: Address
+    let email: String
+    let phone:String
+    init(_ name: String,_ address: Address,_ email: String,_ phone:String) {
+        self.name = name
+        self.address = address
+        self.email = email
+        self.phone = phone
+    }
+}
+
+protocol Account {
+    var userName: String { get }
+    var password: String { get }
+    var status: AccountStatus { get }
+    var person: Person { get }
+}
+
+protocol Admin : Account {
+    func addParkingFloor(floor: ParkingFloor) -> Bool
+    func addParkingSpot(floorName:String,spot:ParkingSpot) -> Bool
+    func addParkingDisplayBoard(floorName:String,displayBoard:ParkingDisplayBoard)->Bool
+    func addCustomerInfoPanel(floorName:String,infoPanel:CustomerInfoPortal)->Bool
+    func addEntrancePanel(entrancePanel: EntrancePanel) -> Bool
+    func addExitPanel(exitPanel:ExitPanel)->Bool
+}
+
+protocol ParkingAttendant: Account{
+    func processTicket(ticketNumber:String)->Bool
+}
+
+class ParkingSpot {
+    let number : String
+    var free: Bool = true
+    var vehicle: Vehicle?
+    var type: ParkingSpotType
+    
+    init(number: String,type:ParkingSpotType) {
+        self.number = number
+        self.type = type
+    }
+    func IsFree() -> Bool {
+        return free
+    }
+        
+    func parkingSpot(type: ParkingSpotType) {
+        self.type = type
+    }
+    
+    func assignVehicle(vehicle: Vehicle) {
+        self.vehicle = vehicle
+        self.free = false
+    }
+    
+    func removeVehicle() {
+        self.vehicle = nil
+        free = true
+    }
+}
+
+class HandicappedSpot: ParkingSpot {
+    init(number: String) {
+        super.init(number: number,type: .HANDICAPPED)
+    }
+}
+
+class MotorbikeSpot: ParkingSpot {
+    init(number: String) {
+        super.init(number: number,type: .MOTORBIKE)
+    }
+}
+
+class CompactSpot: ParkingSpot {
+    init(number: String ) {
+        super.init(number: number, type: .COMPACT)
+    }
+}
+
+class LargeSpot: ParkingSpot {
+     init(number: String) {
+        super.init(number: number, type: .LARGE)
+    }
+}
+
+class ElectricSpot: ParkingSpot {
+     init(number: String) {
+        super.init(number: number, type: .ELECTRIC)
+    }
+}
+
+class Vehicle {
+    let licenseNumber: String
+    let type: VehicleType
+    var ticket: ParkingTicket
+    init(licenseNumber: String,type: VehicleType, ticket: ParkingTicket) {
+        self.licenseNumber = licenseNumber
+        self.type = type
+        self.ticket = ticket
+    }
+    
+    func assignTicket(ticket: ParkingTicket) {
+        self.ticket = ticket
+    }
+}
+
+class Moterbike : Vehicle {
+    init(licenseNumber: String, ticket: ParkingTicket) {
+       super.init(licenseNumber: licenseNumber, type: .MOTORBIKE, ticket: ticket)
+   }
+}
+
+class Car: Vehicle {
+     init(licenseNumber: String, ticket: ParkingTicket) {
+        super.init(licenseNumber: licenseNumber, type: .CAR, ticket: ticket)
+    }
+}
+
+class Van: Vehicle {
+     init(licenseNumber: String, ticket: ParkingTicket) {
+        super.init(licenseNumber: licenseNumber, type: .VAN, ticket: ticket)
+    }
+}
+
+class Truck: Vehicle {
+     init(licenseNumber: String, ticket: ParkingTicket) {
+        super.init(licenseNumber: licenseNumber, type: .TRUCK, ticket: ticket)
+    }
+}
+
+class Electric: Vehicle {
+    init(licenseNumber: String, ticket: ParkingTicket) {
+       super.init(licenseNumber: licenseNumber, type: .ELECTRIC, ticket: ticket)
+   }
+}
+
+class ParkingFloor {
+    let name: String
+    var handicappedSpots: [String:HandicappedSpot]
+    var motorbikeSpots: [String:MotorbikeSpot]
+    var compactSpots: [String:CompactSpot]
+    var largeSpots: [String:LargeSpot]
+    var electricSpots: [String:ElectricSpot]
+    
+    let infoPortals: [String:CustomerInfoPortal]
+    let displayBoard:ParkingDisplayBoard
+    
+    init(name:String,handicappedSpots:[String:HandicappedSpot],compactSpots:[String:CompactSpot],largeSpots:[String:LargeSpot],motorbikeSpots:[String:MotorbikeSpot], electricSpots:[String:ElectricSpot],infoPortals:[String:CustomerInfoPortal],displayBoard:ParkingDisplayBoard) {
+        self.name = name
+        self.handicappedSpots = handicappedSpots
+        self.compactSpots = compactSpots
+        self.largeSpots = largeSpots
+        self.motorbikeSpots = motorbikeSpots
+        self.electricSpots = electricSpots
+        self.infoPortals = infoPortals
+        self.displayBoard = displayBoard
+    }
+    
+    func addParkingSpot(spot:ParkingSpot) {
+        switch spot.type {
+        case .HANDICAPPED:
+            handicappedSpots[spot.number] = (spot as! HandicappedSpot)
+        case .MOTORBIKE:
+            motorbikeSpots[spot.number] = (spot as! MotorbikeSpot)
+        case .COMPACT:
+            compactSpots[spot.number] = (spot as! CompactSpot)
+        case .LARGE:
+            largeSpots[spot.number] = (spot as! LargeSpot)
+        case .ELECTRIC:
+            electricSpots[spot.number] = (spot as! ElectricSpot)
+        default:
+            print("Wrong spot type")
+        }
+    }
+    
+    func assignVehicleToSpot(vehicle:Vehicle, spot:ParkingSpot) {
+        spot.assignVehicle(vehicle: vehicle)
+        switch spot.type {
+        case .HANDICAPPED:
+            updateDisplayBoardForHandicapped(spot: spot)
+        case .MOTORBIKE:
+            updateDisplayBoardForMoterbike(spot: spot)
+        case .COMPACT:
+            updateDisplayBoardForCompact(spot: spot)
+        case .LARGE:
+            updateDisplayBoardForLarge(spot: spot)
+        case .ELECTRIC:
+            updateDisplayBoardForHandicapped(spot: spot)
+        default:
+            print("worn parking spot")
+        }
+    }
+    
+    func updateDisplayBoardForHandicapped(spot:ParkingSpot){
+        for key in handicappedSpots.keys {
+            if handicappedSpots[key]!.IsFree() {
+                self.displayBoard.handicappedFreeSpot = handicappedSpots[key]!
+                break
+            }
+        }
+        self.displayBoard.showEmptySpotNumber()
+    }
+    
+    func updateDisplayBoardForMoterbike(spot:ParkingSpot) {
+        for key in motorbikeSpots.keys {
+            if motorbikeSpots[key]!.IsFree() {
+                self.displayBoard.motorbikeFreeSpot = motorbikeSpots[key]!
+                break
+            }
+        }
+        self.displayBoard.showEmptySpotNumber()
+    }
+    
+    func updateDisplayBoardForCompact(spot:ParkingSpot) {
+        for key in compactSpots.keys {
+            if compactSpots[key]!.IsFree() {
+                self.displayBoard.compactFreeSpot = compactSpots[key]!
+                break
+            }
+        }
+        self.displayBoard.showEmptySpotNumber()
+    }
+    
+    func updateDisplayBoardForLarge(spot:ParkingSpot) {
+        for key in largeSpots.keys {
+            if largeSpots[key]!.IsFree() {
+                self.displayBoard.largeFreeSpot = largeSpots[key]!
+                break
+            }
+        }
+        self.displayBoard.showEmptySpotNumber()
+    }
+    
+    func updateDisplayBoardForElectric(spot:ParkingSpot) {
+        for key in electricSpots.keys {
+            if electricSpots[key]!.IsFree() {
+                self.displayBoard.electricFreeSpot = electricSpots[key]!
+                break
+            }
+        }
+        self.displayBoard.showEmptySpotNumber()
+    }
+    
+    
+    
+    func freeSpot(spot:ParkingSpot) {
+        spot.removeVehicle()
+        ParkingLot.parkingLot.decrementSpotCount(spot: spot)
+    }
+    
+}
+
+class ParkingDisplayBoard {
+    let id: String
+    var handicappedFreeSpot: HandicappedSpot!
+    var motorbikeFreeSpot: MotorbikeSpot!
+    var compactFreeSpot: CompactSpot!
+    var largeFreeSpot: LargeSpot!
+    var electricFreeSpot: ElectricSpot!
+    
+    init(id: String) {
+        self.id = id
+    }
+    
+    func showEmptySpotNumber() {
+        var message = ""
+        if handicappedFreeSpot.IsFree() {
+            message += "Free Handicapped: " + "\(handicappedFreeSpot.number)"
+        } else {
+            message += "Handicapped is full"
+        }
+        
+        message += "\n"
+        
+        if compactFreeSpot.IsFree() {
+            message += "Free Compact: " + "\(compactFreeSpot.number)"
+        } else {
+            message += "Compact is full"
+        }
+        
+        message += "\n"
+        
+        if largeFreeSpot.IsFree() {
+            message += "Free Compact: " + "\(largeFreeSpot.number)"
+        } else {
+            message += "Large is full"
+        }
+        
+        message += "\n"
+        
+        if motorbikeFreeSpot.IsFree() {
+            message += "Free Motorbike: " + "\(largeFreeSpot.number)"
+        } else {
+            message += "Motorbike is full"
+        }
+        
+        message += "\n"
+        
+        if electricFreeSpot.IsFree() {
+            message += "Free Electric: " + "\(electricFreeSpot.number)"
+        } else {
+            message += "Electric is full"
+        }
+        print(message)
+    }
+}
+
+
+class ParkingLot {
+    let name: String
+    let address: Address
+    var parkingRate : [ParkingSpotType:Int]
+    
+    var maxHandicapped : Int
+    var maxMotorbikeCount: Int
+    var maxCompactCount: Int
+    var maxLargeCount: Int
+    var maxElectricCount: Int
+    
+    var handicappedSpotCount: Int
+    var motorbikeSpotCount: Int
+    var compactSpotCount: Int
+    var largeSpotCount: Int
+    var electricSpotCount: Int
+
+    
+    var entrancePanels = [String:EntrancePanel]()
+    var exitPanels = [String:ExitPanel]()
+    var parkingFloors =  [String:ParkingFloor]()
+    var activeTickets = [String:ParkingTicket]()
+    
+    static var parkingLot = ParkingLot(name: "FC 6", address: Address(streetAddress: "Film city", city: "Noida", state: "UP", zipCode: "803116", country: "IN"))
+    
+    private init(name:String,address:Address) {
+        self.name = name
+        self.address = address
+        parkingRate = [.HANDICAPPED:0,.MOTORBIKE:1,.COMPACT:2,.LARGE:3,.ELECTRIC:4]
+        maxHandicapped = 50
+        maxMotorbikeCount = 50
+        maxCompactCount = 50
+        maxLargeCount = 50
+        maxElectricCount = 50
+        
+        handicappedSpotCount = 25
+        motorbikeSpotCount = 25
+        compactSpotCount = 25
+        largeSpotCount = 25
+        electricSpotCount = 25
+    }
+    
+    func isFull(vehicleType: VehicleType) -> Bool {
+        if vehicleType == .TRUCK || vehicleType == .VAN {
+            return largeSpotCount >= maxLargeCount
+        }
+        
+        if vehicleType == .CAR {
+            return (compactSpotCount + largeSpotCount) >= (maxCompactCount + maxLargeCount)
+        }
+        
+        if vehicleType == .MOTORBIKE {
+            return motorbikeSpotCount >= maxMotorbikeCount
+        }
+        
+        return (handicappedSpotCount + motorbikeSpotCount + compactSpotCount + largeSpotCount + electricSpotCount) >= (maxHandicapped + maxMotorbikeCount + compactSpotCount + largeSpotCount + electricSpotCount)
+    }
+    
+    func incrementSpotCount(vehicleType: VehicleType) {
+        if vehicleType == .TRUCK || vehicleType == .VAN {
+            largeSpotCount -= 1
+        } else if vehicleType == .CAR {
+            if compactSpotCount < maxCompactCount {
+                compactSpotCount += 1
+            } else {
+                largeSpotCount += 1
+            }
+        } else if vehicleType == .MOTORBIKE {
+            motorbikeSpotCount += 1
+        } else {
+            if electricSpotCount < maxElectricCount {
+                electricSpotCount += 1
+            } else if compactSpotCount < maxCompactCount {
+                compactSpotCount += 1
+            } else {
+                largeSpotCount += 1
+            }
+        }
+    }
+    
+    func decrementSpotCount(spot: ParkingSpot) {
+        switch spot.type {
+        case .HANDICAPPED:
+            handicappedSpotCount -= 1
+        case .MOTORBIKE:
+            motorbikeSpotCount -= 1
+        case .COMPACT:
+            compactSpotCount -= 1
+        case .LARGE:
+            largeSpotCount -= 1
+        case .ELECTRIC:
+            electricSpotCount -= 1
+        default:
+            print("wrong spot type")
+        }
+    }
+
+}
+
+
+class EntrancePanel {
+    
+}
+
+class ExitPanel {
+    
+}
+
+class ParkingTicket {
+    
+}
+
+class CustomerInfoPortal {
+    
+}
+
+
